@@ -1,0 +1,20 @@
+# flash memory (SSTF01025VF (?))
+
+90 00 00 00 00 00 - read device identifier
+00 00 00 00 BF 49 - expected output
+
+0505050505 00 - read status register
+00 0E - output on startup
+
+50 - Enable-Write-Status Register
+
+01 00 - Write 00 to status register (disable block protection)
+
+06 - Disable write protect
+
+02 01 00 77 BE - Write 0xBE to addr 0x010077
+
+03 01 00 77 00 - Read from addr 0x010077
+
+# read from ADC (ADS7868)
+./rw_test -D /dev/spidev0.1 -i "0 0"
