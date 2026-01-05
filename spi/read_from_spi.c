@@ -3,6 +3,9 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+// smaller than spi_util.c, but doesn't work
+// not sure why (7/1/2022)
+
 int main(int argc, char **argv)
 {
 
@@ -10,7 +13,7 @@ int main(int argc, char **argv)
 	int ctrl = 0;
 	int fd;
 	int n;
-	char device[15] = "/dev/spidev1.1";
+	char device[15] = "/dev/spidev0.1";
 
 	fd = open(device, O_RDWR);
 	if (fd < 0) {
@@ -20,17 +23,17 @@ int main(int argc, char **argv)
 		printf("opened %s\n", device);
 	}	
 	printf("fd = %i\n", fd);
-
-	ctrl = read(fd, rdata, sizeof(rdata) - 1);
+	write(fd, "00", 2);
+	ctrl = read(fd, rdata, 2);
 	if (ctrl == -1) {
 	  perror("read");
 	  exit(EXIT_FAILURE);
 	}
 	rdata[ctrl] = '\0'; // read() doesn't add a trailing 0
-	printf("entered data: %s", rdata);
+ 	printf("control: %d\n", ctrl);	
+	printf("entered data: %d %d\n", rdata[0], rdata[1]);
 
 	close(fd);
-
 
 	return 0;
 }

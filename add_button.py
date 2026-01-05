@@ -1,3 +1,5 @@
+#!/usr/bin/env python2
+
 import os
 import sys
 
@@ -10,7 +12,7 @@ class Unijoy:
 
 		self.update(mode)
 
-	def update(self, mode)
+	def update(self, mode):
 		## determing the ids of the controllers
 		controller_ids = []
 		merged_buttons = []
@@ -81,8 +83,9 @@ class Unijoy:
 				"udevadm info --query=property --name=%s | grep ID_SERIAL=noserial" % path).read()
 
 			if not serial_str:
-				print "remove %s (%s)" % (path, serial_str)
-				os.remove(path)
+				pass
+				#print "remove %s (%s)" % (path, serial_str)
+				#os.remove(path)
 
 
 		## output new configuration
@@ -92,9 +95,9 @@ class Unijoy:
 
 		# add buttons
 		if mode == 1:
-			apply_attached_config()
+			self.apply_attached_config()
 		elif mode == 2:
-			apply_detached_config()
+			self.apply_detached_config()
 		else:
 			raise Exception('Unknown controller configuration: %d') % mode
 

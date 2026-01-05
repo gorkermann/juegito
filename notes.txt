@@ -1,0 +1,12 @@
+ITS VISION IS BASED ON MOVEMENT
+static functions in C are visible ONLY to functions in the same file
+
+END SPI-NGLE FAMILY ZONING
+duplex SPI means one byte in for one byte out
+
+NOT THE SAME!
+char* s = "hello"
+will allocate a string in read-only memory
+
+char s[5] = "hello"
+will allocate a string in rw-able memory

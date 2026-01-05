@@ -105,5 +105,5 @@ void parse_opts(int argc, char *argv[]) {
 
 int main(int argc, char *argv[]) {
 	parse_opts(argc, argv);
-	return do_transfer(device, param, instr_g, NULL);
+	return do_transfer(device, param, instr_g, NULL, 1);
 }

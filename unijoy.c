@@ -335,7 +335,7 @@ static ssize_t unijoy_sysfs_store(struct kobject *kobj, struct attribute *attr,
   __u64 id = ULLONG_MAX;
   int arg1 = -1, arg2 = -1, arg3 = 0;
 
-  printk(KERN_ALERT "unijoy: unijoy_sysfs_store(): %s\n", in_buf);	
+  //printk(KERN_ALERT "unijoy: unijoy_sysfs_store(): %s\n", in_buf);	
 
   if (!buf) 
     return in_len;
@@ -385,7 +385,7 @@ static ssize_t unijoy_sysfs_store(struct kobject *kobj, struct attribute *attr,
   switch (op) {
     // merge
     case 1:
-      printk(KERN_ALERT "unijoy: received merge command\n");
+      //printk(KERN_ALERT "unijoy: received merge command\n");
       sscanf(ptr, "%llu", &id);
       source = unijoy_sysfs_find(id);
       unijoy_sysfs_merge(source);
@@ -733,7 +733,7 @@ static int unijoy_inph_connect(struct input_handler *handler,
 
   // skip "input" part of "input0"
   sscanf(dev->dev.kobj.name + 5, "%llu", &id);
-  printk(KERN_ALERT "unijoy: a device connected: %s %llu,\n", dev->name, id);
+  //printk(KERN_ALERT "unijoy: a device connected: %s %llu,\n", dev->name, id);
 
   if (id < 0) {
     printk(KERN_ALERT "unijoy: cannot parse id: %s %s,\n", dev->name, dev->dev.kobj.name);  
@@ -746,7 +746,7 @@ static int unijoy_inph_connect(struct input_handler *handler,
      | ((long)dev->id.product << 16)
      | ((long)dev->id.version      );
 
-  printk(KERN_ALERT "id would have been %llu\n", old_id);
+  //printk(KERN_ALERT "id would have been %llu\n", old_id);
 
   if (old_id == 0) {
     return 0;
@@ -888,7 +888,7 @@ static void unijoy_inph_event(struct input_handle *handle,
   int i;
   int subcode;
 
-  printk(KERN_ALERT "unijoy: unijoy_inph_event()\n");	
+  //printk(KERN_ALERT "unijoy: unijoy_inph_event()\n");	
 
   if (!source)
     return;

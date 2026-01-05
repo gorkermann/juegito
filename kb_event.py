@@ -35,13 +35,13 @@ class InputDevice():
 
 		self.debug = debug
 
-	def register(ev_type, code, value, func):
+	def register(self, ev_type, code, value, func):
 		self.listeners[self.listener_index] = Listener(ev_type, code, value, func)
 		self.listener_index += 1
 
 		return self.listener_index
 
-	def unregister(index):
+	def unregister(self, index):
 		self.listeners.pop(index)
 
 	def listen(self):
@@ -55,7 +55,7 @@ class InputDevice():
 
 		    if ev_type != 0 or code != 0 or value != 0:
 
-		    	for listener in self.listeners.items():
+		    	for i, listener in self.listeners.items():
 		    		if listener.ev_type == ev_type:
 		    			if listener.code == code:
 		    				if listener.value == value:

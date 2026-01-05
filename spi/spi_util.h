@@ -7,4 +7,8 @@ struct SpiParam {
 	uint16_t delay;
 };
 
-int do_transfer(const char* device, struct SpiParam param, char* instr, uint8_t* rx);
+int do_transfer(const char* device, 
+				struct SpiParam param,
+				char* instr,
+				uint8_t* rx,
+				int verbose);

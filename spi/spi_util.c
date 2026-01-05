@@ -33,13 +33,19 @@ static void pabort(const char *s) {
 	abort();
 }*/
 
-static int transfer(int fd, struct SpiParam param, char* instr, uint8_t* output_buf) {
+static int transfer(int fd, 
+					struct SpiParam param,
+					char* instr,
+					uint8_t* output_buf,
+					int verbose ) {
 	if (instr == NULL) {
-		perror("instruction has not been set\n");
+		printf("instruction has not been set\n");
 		return -1;
 	}
 
-	printf("instr: %s\n", instr);
+	if (verbose) {
+		printf("instr: %s\n", instr);
+	}
 
 	// get bytes from input string
 	int byte_count = 0;	
@@ -79,26 +85,31 @@ static int transfer(int fd, struct SpiParam param, char* instr, uint8_t* output_
 		return -1;
 	}
 
-	printf("Input:");	
-	for (ret = 0; ret < byte_count; ret++) {
-		if (!(ret % 6))
-			puts("");
-		printf("%.2X ", tx[ret]);
-	}
-
-	puts("\n");
-
-	printf("Output:");
-	for (ret = 0; ret < byte_count; ret++) {
-		if (output_buf != NULL) {
+	// copy receive buffer to output buffer
+	if (output_buf != NULL) {
+		for (ret = 0; ret < byte_count; ret++) {
 			output_buf[ret] = rx[ret];
 		}
-
-		if (!(ret % 6))
-			puts("");
-		printf("%.2X ", rx[ret]);	
 	}
-	puts("");
+
+	if (verbose) {
+		printf("Input:");	
+		for (ret = 0; ret < byte_count; ret++) {
+			if (!(ret % 6))
+				puts("");
+			printf("%.2X ", tx[ret]);
+		}
+
+		puts("\n");
+
+		printf("Output:");
+		for (ret = 0; ret < byte_count; ret++) {
+			if (!(ret % 6))
+				puts("");
+			printf("%.2X ", rx[ret]);	
+		}
+		puts("");
+	}
 
 	return 0;
 }
@@ -106,7 +117,8 @@ static int transfer(int fd, struct SpiParam param, char* instr, uint8_t* output_
 int do_transfer(const char* device, 
 				struct SpiParam param,
 				char* instr,
-				uint8_t* output_buf) {	
+				uint8_t* output_buf,
+				int verbose) {	
 	int ret;
 	int fd;
 
@@ -161,11 +173,13 @@ int do_transfer(const char* device,
 		return -1;
 	}
 
-	printf("spi mode: %d\n", param.mode);
-	printf("bits per word: %d\n", param.bits);
-	printf("max speed: %d Hz (%d KHz)\n", param.speed, param.speed/1000);
+	if (verbose) {
+		printf("spi mode: %d\n", param.mode);
+		printf("bits per word: %d\n", param.bits);
+		printf("max speed: %d Hz (%d KHz)\n", param.speed, param.speed/1000);
+	}
 
-	if (transfer(fd, param, instr, output_buf)) {
+	if (transfer(fd, param, instr, output_buf, verbose)) {
 		printf("unable to complete transfer\n");
 		close(fd);
 		return -1;
