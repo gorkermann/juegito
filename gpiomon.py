@@ -27,7 +27,7 @@ PIECON_0V2_GPIO = {
 	'N_RIGHT_CTLR': GpioPinSpec('N_RIGHT_CTLR', 13, GPIO.IN),
 	
 	# this is the same as N_RIGHT_CTLR, but renamed for clarity
-	'N_CTLR_MODE': GpioPinSpec('N_CTLR_MODE', 13, GPIO.IN),
+	'CTLR_MODE': GpioPinSpec('CTLR_MODE', 13, GPIO.IN),
 
 	# cartridge presence detection (10k pullup)
 	'N_DETECT': GpioPinSpec('N_DETECT', 26, GPIO.IN),
@@ -35,6 +35,7 @@ PIECON_0V2_GPIO = {
 	# reset switch (10k pullup)
 	'N_RESET_SW': GpioPinSpec('N_RESET_SW', 5, GPIO.IN)
 }
+
 POLL_INTERVAL = 0.2 # seconds
 
 pinout = None
@@ -81,50 +82,25 @@ def signal_handler(sig, frame):
 	GPIO.cleanup()
 	sys.exit(0)
 
-def update_ctlr_mode(button_state):
-	global ctlr_mode
-
-	# down
-	if not button_state:
-		if ctlr_mode == CTLR_MODE_DETACHED:
-			unijoy.update(CTLR_MODE_ATTACHED)
-
-		ctlr_mode = CTLR_MODE_ATTACHED
-
-	# up
-	else:
-		if ctlr_mode == CTLR_MODE_ATTACHED:
-			unijoy.update(CTLR_MODE_DETACHED)
-
-		ctlr_mode = CTLR_MODE_DETACHED
-
-
-def button_pressed_callback(channel):
-	if pinout is not None:
-		for pin in pinout:
-			if pin.channel == channel:
-				if pin.name == 'N_LEFT_CTLR':
-					update_ctlr_mode(0)
-
-def button_released_callback(channel):
-	if pinout is not None:
-		for pin in pinout:
-			if pin.channel == channel:
-				if pin.name == 'N_LEFT_CTLR':
-					update_ctlr_mode(1)
-
-
 def set_ctlr_attached():
-	if emulator_is_running():
-		return
+	#if emulator_is_running():
+	#	return
 
 	set_ctlr_mode(CTLR_MODE_ATTACHED)
 
 def set_ctlr_detached():
-	if emulator_is_running():
-		return
+	#if emulator_is_running():
+	#	return
 
 	set_ctlr_mode(CTLR_MODE_DETACHED)
+
+def set_ctlr_mode_from_switch(channel):
+	if GPIO.input(pinout['CTLR_MODE'].channel):
+		if ctlr_mode == CTLR_MODE_ATTACHED:
+			set_ctlr_detached()
+	else:
+		if ctlr_mode == CTLR_MODE_DETACHED:
+			set_ctlr_attached()
 
 def copy_file(source, target):
 	shutil.copyfile(source, target)
@@ -150,6 +126,7 @@ def set_ctlr_mode(mode):
 
 
 def load_prev_rom():
+	global rom_names
 	global current_rom_index
 
 	if emulator_is_running():
@@ -162,6 +139,7 @@ def load_prev_rom():
 	load_rom(current_rom_index)
 
 def load_next_rom():
+	global rom_names
 	global current_rom_index
 
 	if emulator_is_running():
@@ -220,8 +198,10 @@ if __name__ == '__main__':
 	#unijoy = add_button.Unijoy(CTLR_MODE_ATTACHED)
 
 	p2_ctlr = kb_event.InputDevice('/dev/input/js1')
-	p2_ctlr.register(JS_EVENT_BUTTON, BTN_A, BTNVAL_DOWN, set_ctlr_attached)
-	p2_ctlr.register(JS_EVENT_BUTTON, BTN_B, BTNVAL_DOWN, set_ctlr_detached) 
+
+	# commented these out, using dedicated switch instead
+	# p2_ctlr.register(JS_EVENT_BUTTON, BTN_A, BTNVAL_DOWN, set_ctlr_attached)
+	# p2_ctlr.register(JS_EVENT_BUTTON, BTN_B, BTNVAL_DOWN, set_ctlr_detached)
 
 	p2_ctlr.register(JS_EVENT_AXIS, AXIS_HORIZ, -32767, load_prev_rom)
 	p2_ctlr.register(JS_EVENT_AXIS, AXIS_HORIZ, 32767, load_next_rom)
@@ -234,13 +214,16 @@ if __name__ == '__main__':
 		current_rom_index = 0
 		load_rom(current_rom_index)
 
-	for pin in pinout:
-		pass
-		#GPIO.setup(pin.channel, pin.direction, pull_up_down=GPIO.PUD_UP)
-		#GPIO.add_event_detect(pin.channel, GPIO.FALLING, 
-		#	callback=button_pressed_callback, bouncetime=100)
-		#GPIO.add_event_detect(pin.channel, GPIO.RISING, 
-		#	callback=button_released_callback, bouncetime=100)
+	# controller mode switch
+	pin = pinout['CTLR_MODE']
+	GPIO.setup(pin.channel, pin.direction, pull_up_down=GPIO.PUD_UP)
+	GPIO.add_event_detect(pin.channel, GPIO.BOTH,
+		callback=set_ctlr_mode_from_switch, bouncetime=100)
+
+	if GPIO.input(pin.channel):
+		set_ctlr_detached()
+	else:
+		set_ctlr_attached()
 
 	# reset switch
 	pin = pinout['N_RESET_SW']
@@ -248,13 +231,12 @@ if __name__ == '__main__':
 	GPIO.add_event_detect(pin.channel, GPIO.FALLING,
 		callback=reset_emulator, bouncetime=100)
 
+	# handle ctrl-C
 	signal.signal(signal.SIGINT, signal_handler)
-	
+
+	# loop
 	while True:
 		time.sleep(POLL_INTERVAL)
 
 		p2_ctlr.listen()
-
-		#update_ctlr_mode(GPIO.input(6))
-
 	#signal.pause()
